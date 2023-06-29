@@ -21,7 +21,7 @@ type Task struct {
 	id           int64
 	creationTime time.Time // время создания
 	finalTime    time.Time // время выполнения
-	taskRESULT   []byte
+	taskRESULT   string
 	err          error
 }
 
@@ -79,10 +79,15 @@ func (t *Task) processTask() {
 	tt := t.creationTime
 
 	// if tt.After(time.Now().Add(-20 * time.Second)) {
-	if time.Now().Sub(tt) < 20*time.Second && t.err == nil {
-		t.taskRESULT = []byte("task has been successed")
+	// if time.Now().Sub(tt) < 20*time.Second && t.err == nil {
+	if time.Now().Sub(tt) < 100*time.Millisecond && t.err == nil {
+		t.taskRESULT = "task has been successed"
 	} else {
-		t.taskRESULT = []byte("something went wrong")
+		if t.err == nil {
+			t.taskRESULT = "something went wrong"
+		} else {
+			t.taskRESULT = t.err.Error()
+		}
 	}
 	t.finalTime = time.Now()
 
@@ -183,14 +188,14 @@ func main() {
 
 	wg.Wait() // Ожидаем выполнение тасков (sleep на)
 
-	println("Errors:")
+	fmt.Printf("Errors:")
 	for _, t := range errorTaskIDs {
-		fmt.Printf("Task id %d time %s, error %s\n", t.id, t.creationTime.Format(time.RFC3339Nano), string(t.taskRESULT))
+		fmt.Printf("Task id %d time %s, error %s\n", t.id, t.creationTime.Format(time.RFC3339Nano), t.taskRESULT)
 	}
 
-	println("Done tasks:")
+	fmt.Printf("Done tasks:")
 	for _, t := range taskIDs {
-		fmt.Printf("Task id %d time %s, SUCCESS %s\n", t.id, t.creationTime.Format(time.RFC3339Nano), string(t.taskRESULT))
+		fmt.Printf("Task id %d time %s, SUCCESS %s\n", t.id, t.creationTime.Format(time.RFC3339Nano), t.taskRESULT)
 	}
 
 	// Проверка, что количество изначально сгенерированных и обработанных тасков совпадает
